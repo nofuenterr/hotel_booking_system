@@ -1,3 +1,9 @@
+const { 
+  processGetAllGuests,
+  processCreateGuest,
+  processGetGuest,
+  processUpdateGuest
+} = require('../functions/guests.js');
 const {
   validateCreateGuestRequest,
   validateGetGuestRequest,
@@ -6,7 +12,9 @@ const {
 
 const getAllGuests = async (req, res, next) => {
 	try {
-		return res.status(200).json({ info: 'Retrieved all guests' });
+    const result = await processGetAllGuests();
+
+		return res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -18,7 +26,9 @@ const createGuest = async (req, res, next) => {
 
 		await validateCreateGuestRequest({ first_name, last_name, email, phone });
 
-		return res.status(201).json({ info: 'Created new guest', data: { first_name, last_name, email, phone } });
+    const result = await processCreateGuest({ first_name, last_name, email, phone });
+
+		return res.status(201).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -32,7 +42,9 @@ const getGuest = async (req, res, next) => {
 
     await validateGetGuestRequest({ id });
 
-		return res.status(200).json({ info: `Retrieved guest with id #${id}` });
+    const result = await processGetGuest({ id });
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -47,7 +59,9 @@ const updateGuest = async (req, res, next) => {
 
 		await validateUpdateGuestRequest({ id, first_name, last_name, email, phone });
 
-		return res.status(200).json({ info: `Updated guest details with id #${id}`, data: { first_name, last_name, email, phone } });
+    const result = await processUpdateGuest({ id, first_name, last_name, email, phone });
+
+		return res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
