@@ -61,7 +61,7 @@ const updateGuest= async (req, res) => {
 
 		if (id !== undefined) id = Number(id);
 
-		await validateUpdateGuestRequest({ first_name, last_name, email, phone });
+		await validateUpdateGuestRequest({ id, first_name, last_name, email, phone });
 
 		return res.status(200).json({ info: `Updated guest details with id #${id}`, data: { first_name, last_name, email, phone } });
 	} catch (err) {

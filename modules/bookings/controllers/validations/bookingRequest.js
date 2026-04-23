@@ -3,6 +3,12 @@ const yup = require('yup');
 const validateGetAllGuestBookingsRequest = (form) => {
 	const formShape = {
 		guest_id: yup.number().required()
+      .integer('guest_id must be a whole number')
+      .test(
+        'positive-integer',
+        'guest_id must be a positive integer',
+        value => value > 0
+      )
 	};
 
 	const schema = yup.object().shape(formShape);
@@ -11,8 +17,20 @@ const validateGetAllGuestBookingsRequest = (form) => {
 
 const validateCreateBookingRequest = (form) => {
 	const formShape = {
-		guest_id: yup.number().required(),
-		room_id: yup.number().required(),
+		guest_id: yup.number().required()
+      .integer('guest_id must be a whole number')
+      .test(
+        'positive-integer',
+        'guest_id must be a positive integer',
+        value => value > 0
+      ),
+		room_id: yup.number().required()
+      .integer('room_id must be a whole number')
+      .test(
+        'positive-integer',
+        'room_id must be a positive integer',
+        value => value > 0
+      ),
 		check_in_date: yup.string().required()
 			.matches(
 				/^\d{4}-\d{2}-\d{2}$/,
@@ -32,6 +50,12 @@ const validateCreateBookingRequest = (form) => {
 const validateGetBookingRequest = (form) => {
 	const formShape = {
 		id: yup.number().required()
+      .integer('id must be a whole number')
+      .test(
+        'positive-integer',
+        'id must be a positive integer',
+        value => value > 0
+      )
 	};
 
 	const schema = yup.object().shape(formShape);
@@ -40,7 +64,13 @@ const validateGetBookingRequest = (form) => {
 
 const validateUpdateBookingRequest = (form) => {
 	const formShape = {
-    id: yup.number().required(),
+    id: yup.number().required()
+      .integer('id must be a whole number')
+      .test(
+        'positive-integer',
+        'id must be a positive integer',
+        value => value > 0
+      ),
 		status: yup.string().oneOf(Object.values(['pending', 'cancelled', 'confirmed'])).required()
 	};
 
@@ -51,6 +81,12 @@ const validateUpdateBookingRequest = (form) => {
 const validateCancelBookingRequest = (form) => {
 	const formShape = {
 		id: yup.number().required()
+      .integer('id must be a whole number')
+      .test(
+        'positive-integer',
+        'id must be a positive integer',
+        value => value > 0
+      )
 	};
 
 	const schema = yup.object().shape(formShape);

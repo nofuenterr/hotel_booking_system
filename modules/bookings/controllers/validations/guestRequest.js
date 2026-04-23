@@ -15,6 +15,12 @@ const validateCreateGuestRequest = (form) => {
 const validateGetGuestRequest = (form) => {
   const formShape = {
     id: yup.number().required()
+      .integer('id must be a whole number')
+      .test(
+        'positive-integer',
+        'id must be a positive integer',
+        value => value > 0
+      )
   };
 
   const schema = yup.object().shape(formShape);
@@ -23,6 +29,13 @@ const validateGetGuestRequest = (form) => {
 
 const validateUpdateGuestRequest = (form) => {
   const formShape = {
+    id: yup.number().required()
+      .integer('id must be a whole number')
+      .test(
+        'positive-integer',
+        'id must be a positive integer',
+        value => value > 0
+      ),
     first_name: yup.string().required(),
     last_name: yup.string().required(),
     email: yup.string().email('invalid email address').required(),
