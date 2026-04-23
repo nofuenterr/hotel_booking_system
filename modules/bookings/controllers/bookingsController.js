@@ -1,3 +1,4 @@
+const { processCreateBooking } = require('../functions/bookings.js');
 const {
   validateGetAllGuestBookingsRequest,
   validateCreateBookingRequest, 
@@ -6,7 +7,7 @@ const {
   validateCancelBookingRequest
 } = require('./validations/bookingRequest.js');
 
-const getAllGuestBookings = async (req, res) => {
+const getAllGuestBookings = async (req, res, next) => {
 	try {
 		let { guest_id } = req.params;
 
@@ -16,27 +17,19 @@ const getAllGuestBookings = async (req, res) => {
 
 		return res.status(200).json({ info: `Retrieved all bookings for guest with id #${guest_id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const getAllBookings = async (req, res) => {
+const getAllBookings = async (req, res, next) => {
 	try {
 		return res.status(200).json({ info: 'Retrieved all bookings' });
 	} catch (err) {
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const createBooking = async (req, res) => {
+const createBooking = async (req, res, next) => {
 	try {
 		let { guest_id, room_id, check_in_date, check_out_date } = req.body;
 
@@ -47,19 +40,11 @@ const createBooking = async (req, res) => {
 
 		return res.status(201).json({ info: 'Created new room', data: { guest_id, room_id, check_in_date, check_out_date } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const getBooking = async (req, res) => {
+const getBooking = async (req, res, next) => {
 	try {
 		let { id } = req.params;
 
@@ -69,60 +54,36 @@ const getBooking = async (req, res) => {
 
 		return res.status(200).json({ info: `Retrieved booking with id #${id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const updateBooking = async (req, res) => {
-	try {
-		let { status } = req.body;
+const updateBooking = async (req, res, next) => {
+  try {
+    let { status } = req.body;
     let { id } = req.params;
 
 		if (id !== undefined) id = Number(id);
-
+    
 		await validateUpdateBookingRequest({ id, status });
-
+    
 		return res.status(200).json({ info: `Updated booking with id #${id}`, data: { status } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const cancelBooking = async (req, res) => {
-	try {
-		let { id } = req.params;
-
+const cancelBooking = async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    
 		if (id !== undefined) id = Number(id);
 
     await validateCancelBookingRequest({ id });
-
+    
 		return res.status(200).json({ info: `Cancelled booking with id #${id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 

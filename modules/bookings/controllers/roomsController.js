@@ -5,15 +5,15 @@ const {
   validateDeleteRoomRequest
 } = require('./validations/roomRequest.js');
 
-const getAllRooms = async (req, res) => {
+const getAllRooms = async (req, res, next) => {
 	try {
 		return res.status(200).json({ info: 'Retrieved all rooms' });
 	} catch (err) {
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const createRoom = async (req, res) => {
+const createRoom = async (req, res, next) => {
 	try {
 		let { room_number, room_type, price_per_night } = req.body;
 
@@ -23,19 +23,11 @@ const createRoom = async (req, res) => {
 
 		return res.status(201).json({ info: 'Created new room', data: { room_number, room_type, price_per_night } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const getRoom = async (req, res) => {
+const getRoom = async (req, res, next) => {
 	try {
 		let { id } = req.params;
 
@@ -45,19 +37,11 @@ const getRoom = async (req, res) => {
 
 		return res.status(200).json({ info: `Retrieved room with id #${id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const updateRoom = async (req, res) => {
+const updateRoom = async (req, res, next) => {
 	try {
     let { room_number, room_type, price_per_night } = req.body;
     let { id } = req.params;
@@ -68,19 +52,11 @@ const updateRoom = async (req, res) => {
 
 		return res.status(200).json({ info: `Updated room details with id #${id}`, data: { room_number, room_type, price_per_night } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const deleteRoom = async (req, res) => {
+const deleteRoom = async (req, res, next) => {
 	try {
 		let { id } = req.params;
 
@@ -90,15 +66,7 @@ const deleteRoom = async (req, res) => {
 
 		return res.status(200).json({ info: `Deleted room with id #${id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 

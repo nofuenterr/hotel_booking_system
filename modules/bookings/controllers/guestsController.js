@@ -4,15 +4,15 @@ const {
   validateUpdateGuestRequest
 } = require('./validations/guestRequest.js');
 
-const getAllGuests = async (req, res) => {
+const getAllGuests = async (req, res, next) => {
 	try {
 		return res.status(200).json({ info: 'Retrieved all guests' });
 	} catch (err) {
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const createGuest = async (req, res) => {
+const createGuest = async (req, res, next) => {
 	try {
 		let { first_name, last_name, email, phone } = req.body;
 
@@ -20,19 +20,11 @@ const createGuest = async (req, res) => {
 
 		return res.status(201).json({ info: 'Created new guest', data: { first_name, last_name, email, phone } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
-const getGuest = async (req, res) => {
+const getGuest = async (req, res, next) => {
 	try {
 		let { id } = req.params;
 
@@ -42,19 +34,11 @@ const getGuest = async (req, res) => {
 
 		return res.status(200).json({ info: `Retrieved guest with id #${id}` });
 	} catch (err) {
-    if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+    next(err);
 	}
 };
 
-const updateGuest= async (req, res) => {
+const updateGuest = async (req, res, next) => {
 	try {
 		let { first_name, last_name, email, phone } = req.body;
     let { id } = req.params;
@@ -65,15 +49,7 @@ const updateGuest= async (req, res) => {
 
 		return res.status(200).json({ info: `Updated guest details with id #${id}`, data: { first_name, last_name, email, phone } });
 	} catch (err) {
-		if (err?.name === 'ValidationError') {
-			return res.status(400).json({
-				success: false,
-				error: "validation-error",
-				errors: err?.errors || []
-			});
-		}
-
-		return res.status(400).send({ success: false, error: err.message });
+		next(err);
 	}
 };
 
