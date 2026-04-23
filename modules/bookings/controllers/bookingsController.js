@@ -1,4 +1,11 @@
-const { processCreateBooking } = require('../functions/bookings.js');
+const { 
+  processGetAllGuestBookings,
+  processGetAllBookings,
+  processCreateBooking,
+  processGetBooking,
+  processUpdateBooking,
+  processCancelBooking
+} = require('../functions/bookings.js');
 const {
   validateGetAllGuestBookingsRequest,
   validateCreateBookingRequest, 
@@ -15,7 +22,9 @@ const getAllGuestBookings = async (req, res, next) => {
 
     await validateGetAllGuestBookingsRequest({ guest_id });
 
-		return res.status(200).json({ info: `Retrieved all bookings for guest with id #${guest_id}` });
+    const result = await processGetAllGuestBookings({ guest_id });
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -23,7 +32,9 @@ const getAllGuestBookings = async (req, res, next) => {
 
 const getAllBookings = async (req, res, next) => {
 	try {
-		return res.status(200).json({ info: 'Retrieved all bookings' });
+    const result = await processGetAllBookings();
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -38,7 +49,9 @@ const createBooking = async (req, res, next) => {
 
 		await validateCreateBookingRequest({ guest_id, room_id, check_in_date, check_out_date });
 
-		return res.status(201).json({ info: 'Created new room', data: { guest_id, room_id, check_in_date, check_out_date } });
+    const result = await processCreateBooking({ guest_id, room_id, check_in_date, check_out_date });
+
+		return res.status(201).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -52,7 +65,9 @@ const getBooking = async (req, res, next) => {
 
     await validateGetBookingRequest({ id });
 
-		return res.status(200).json({ info: `Retrieved booking with id #${id}` });
+    const result = await processGetBooking({ id });
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -66,8 +81,10 @@ const updateBooking = async (req, res, next) => {
 		if (id !== undefined) id = Number(id);
     
 		await validateUpdateBookingRequest({ id, status });
+
+    const result = await processUpdateBooking({ id, status });
     
-		return res.status(200).json({ info: `Updated booking with id #${id}`, data: { status } });
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -80,8 +97,10 @@ const cancelBooking = async (req, res, next) => {
 		if (id !== undefined) id = Number(id);
 
     await validateCancelBookingRequest({ id });
+
+    const result = await processCancelBooking({ id });
     
-		return res.status(200).json({ info: `Cancelled booking with id #${id}` });
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
