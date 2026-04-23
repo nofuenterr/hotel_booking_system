@@ -1,3 +1,10 @@
+const { 
+  processGetAllRooms, 
+  processCreateRoom,
+  processGetRoom,
+  processUpdateRoom,
+  processDeleteRoom
+} = require('../functions/rooms.js');
 const {
   validateCreateRoomRequest,
   validateGetRoomRequest,
@@ -7,7 +14,9 @@ const {
 
 const getAllRooms = async (req, res, next) => {
 	try {
-		return res.status(200).json({ info: 'Retrieved all rooms' });
+    const result = await processGetAllRooms();
+
+		return res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -21,7 +30,9 @@ const createRoom = async (req, res, next) => {
 
 		await validateCreateRoomRequest({ room_number, room_type, price_per_night });
 
-		return res.status(201).json({ info: 'Created new room', data: { room_number, room_type, price_per_night } });
+    const result = await processCreateRoom({ room_number, room_type, price_per_night });
+
+		return res.status(201).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -35,7 +46,9 @@ const getRoom = async (req, res, next) => {
 
     await validateGetRoomRequest({ id });
 
-		return res.status(200).json({ info: `Retrieved room with id #${id}` });
+    const result = await processGetRoom({ id });
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
@@ -50,7 +63,9 @@ const updateRoom = async (req, res, next) => {
 
 		await validateUpdateRoomRequest({ id, room_number, room_type, price_per_night });
 
-		return res.status(200).json({ info: `Updated room details with id #${id}`, data: { room_number, room_type, price_per_night } });
+    const result = await processUpdateRoom({ id, room_number, room_type, price_per_night });
+
+		return res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -64,7 +79,9 @@ const deleteRoom = async (req, res, next) => {
 
     await validateDeleteRoomRequest({ id });
 
-		return res.status(200).json({ info: `Deleted room with id #${id}` });
+    const result = await processDeleteRoom({ id });
+
+		return res.status(200).json(result);
 	} catch (err) {
     next(err);
 	}
