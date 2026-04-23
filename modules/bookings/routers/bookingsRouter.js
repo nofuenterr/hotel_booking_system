@@ -6,7 +6,7 @@ const {
   getBooking, 
   updateBooking, 
   cancelBooking 
-} = require('../controllers/bookingsController');
+} = require('../controllers/bookingsController.js');
 
 const bookingsRouter = Router();
 

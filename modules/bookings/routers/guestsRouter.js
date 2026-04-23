@@ -4,7 +4,7 @@ const {
   createGuest,
   getGuest,
   updateGuest
-} = require('../controllers/guestsController');
+} = require('../controllers/guestsController.js');
 
 const guestsRouter = Router();
 
