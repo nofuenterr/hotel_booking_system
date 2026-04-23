@@ -16,10 +16,71 @@ app.use('/bookings', routes);
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
-app.use((err, _req, res) => {
+
+app.use((err, _req, res, next) => {
   console.error(err);
-  res.status(err.statusCode || 500).json({
-    message: err.message || 'Internal Server Error',
+
+  // Yup validation errors
+  if (err?.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation Error',
+      errors: err?.errors || []
+    });
+  };
+
+  // Custom errors (NotFoundError, BadRequestError, etc.)
+  if (err?.statusCode) {
+    return res.status(err.statusCode).json({
+      success: false,
+      error: err.message
+    });
+  };
+
+  // PostgreSQL connection failures
+  if (err?.code === '08006' || err?.code === '08001') {
+    return res.status(503).json({
+      success: false,
+      error: 'Database connection failed. Please try again later.'
+    });
+  };
+
+  // Table doesn't exist (migrations not run)
+  if (err?.code === '42P01') {
+    return res.status(500).json({
+      success: false,
+      error: 'Database table not found. Please run migrations.'
+    });
+  };
+
+  // Invalid date format
+  if (err?.code === '22007') {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid date format provided.'
+    });
+  };
+
+  // Invalid input syntax
+  if (err?.code === '22P02') {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid input syntax.'
+    });
+  };
+
+  // Unhandled PostgreSQL errors
+  if (err?.code) {
+    return res.status(500).json({
+      success: false,
+      error: 'An unexpected database error occurred.'
+    });
+  };
+
+  // Generic fallback
+  return res.status(500).json({
+    success: false,
+    error: err.message || 'Internal Server Error'
   });
 });
 
