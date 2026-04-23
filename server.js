@@ -1,5 +1,3 @@
-require('dotenv/config');
-
 const app = require('./appSetup.js');
 const { PORT } = require('./includes/config/mainConfig.js');
 
