@@ -45,7 +45,7 @@ const createBooking = async (req, res) => {
 
 		await validateCreateBookingRequest({ guest_id, room_id, check_in_date, check_out_date });
 
-		return res.status(200).json({ guest_id, room_id, check_in_date, check_out_date });
+		return res.status(201).json({ info: 'Created new room', data: { guest_id, room_id, check_in_date, check_out_date } });
 	} catch (err) {
 		if (err?.name === 'ValidationError') {
 			return res.status(400).json({
@@ -90,7 +90,7 @@ const updateBooking = async (req, res) => {
 
 		await validateUpdateBookingRequest({ id, status });
 
-		return res.status(200).json({ info: `Updated booking status with id #${id} to ${status}` });
+		return res.status(200).json({ info: `Updated booking with id #${id}`, data: { status } });
 	} catch (err) {
 		if (err?.name === 'ValidationError') {
 			return res.status(400).json({
