@@ -1,0 +1,134 @@
+const db = require('../../../includes/db/db.js');
+const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
+
+const processGetAllGuestBookings = async ({ guest_id }) => {
+  try {
+    const guestCheck = await db.query(`SELECT id FROM guests WHERE id = $1;`, [guest_id]);
+
+    if (!guestCheck.rows[0]) throw new NotFoundError('Guest not found');
+
+    const { rows } = await db.query(
+      `SELECT id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
+      FROM bookings
+      WHERE guest_id = $1;`,
+      [guest_id]
+    );
+
+    return rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const processGetAllBookings = async () => {
+  try {
+    const { rows } = await db.query(
+      `SELECT id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
+      FROM bookings;`
+    );
+
+    return rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_out_date }) => {
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO bookings (guest_id, room_id, check_in_date, check_out_date) 
+      VALUES ($1, $2, $3, $4)
+      RETURNING guest_id, room_id, check_in_date, check_out_date;`,
+      [guest_id, room_id, check_in_date, check_out_date]
+    );
+
+    if (!rows[0]) throw new BadRequestError('Failed to create booking');
+
+    return rows[0];
+  } catch (err) {
+    if (err.code === '23503') {
+      if (err.constraint === 'bookings_guest_id_fkey') throw new NotFoundError('Guest not found');
+      if (err.constraint === 'bookings_room_id_fkey') throw new NotFoundError('Room not found');
+      throw new NotFoundError('Referenced record not found');
+    }
+    if (err.code === '23514') {
+      if (err.constraint === 'bookings_check_out_after_check_in') throw new BadRequestError('Check out date must be after check in date');
+      throw new BadRequestError('Check constraint violation');
+    }
+    if (err.code === '22007') throw new BadRequestError('Invalid date format. Use YYYY-MM-DD');
+    throw err;
+  }
+};
+
+const processGetBooking = async ({ id }) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT 
+        b.id, b.check_in_date, b.check_out_date, b.status, b.weather, b.created_at,
+        g.id, g.first_name, g.last_name, g.email, g.phone,
+        r.id, r.room_number, r.room_type, r.price_per_night
+      FROM bookings AS b
+      JOIN guests AS g ON b.guest_id = g.id
+      JOIN rooms AS r ON b.room_id = r.id
+      WHERE b.id = $1
+      LIMIT 1;`,
+      [id]
+    );
+
+    if (!rows[0]) throw new NotFoundError('Booking not found');
+
+    return rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+const processUpdateBooking = async ({ id, status }) => {
+  try {
+    const { rows } = await db.query(
+      `UPDATE bookings
+      SET status = $2
+      WHERE id = $1
+      RETURNING id, guest_id, room_id, check_in_date, check_out_date, status;`,
+      [id, status]
+    );
+
+    if (!rows[0]) throw new NotFoundError('Booking not found');
+
+    return rows[0];
+  } catch (err) {
+    if (err.code === '23514') {
+      if (err.constraint === 'bookings_valid_status') throw new BadRequestError("Invalid booking status. Must be one of: 'pending', 'cancelled', 'confirmed'");
+      throw new BadRequestError('Check constraint violation');
+    }
+    if (err.code === '22007') throw new BadRequestError('Invalid date format. Use YYYY-MM-DD');
+    throw err;
+  }
+};
+
+const processCancelBooking = async ({ id }) => {
+  try {
+    const { rows } = await db.query(
+      `UPDATE bookings
+      SET status = 'cancelled'
+      WHERE id = $1
+      RETURNING id, guest_id, room_id, check_in_date, check_out_date, status;`,
+      [id]
+    );
+
+    if (!rows[0]) throw new NotFoundError('Booking not found');
+
+    return rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+module.exports = {
+  processGetAllGuestBookings,
+  processGetAllBookings,
+  processCreateBooking,
+  processGetBooking,
+  processUpdateBooking,
+  processCancelBooking
+};
