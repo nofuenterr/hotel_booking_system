@@ -18,7 +18,7 @@ const createGuest = async (req, res) => {
 
 		await validateCreateGuestRequest({ first_name, last_name, email, phone });
 
-		return res.status(201).json({ first_name, last_name, email, phone });
+		return res.status(201).json({ info: 'Created new guest', data: { first_name, last_name, email, phone } });
 	} catch (err) {
 		if (err?.name === 'ValidationError') {
 			return res.status(400).json({
