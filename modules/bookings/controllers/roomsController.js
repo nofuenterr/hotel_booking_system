@@ -64,7 +64,7 @@ const updateRoom = async (req, res) => {
 
     if (price_per_night !== undefined) price_per_night = Number(price_per_night);
 
-		await validateUpdateRoomRequest({ room_number, room_type, price_per_night });
+		await validateUpdateRoomRequest({ id, room_number, room_type, price_per_night });
 
 		return res.status(200).json({ info: `Updated room details with id #${id}`, data: { room_number, room_type, price_per_night } });
 	} catch (err) {
