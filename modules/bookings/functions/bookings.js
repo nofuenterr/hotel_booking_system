@@ -35,6 +35,19 @@ const processGetAllBookings = async () => {
 
 const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_out_date }) => {
   try {
+    const dateConflictCheck = await db.query(
+      `SELECT * FROM bookings
+      WHERE room_id = $1
+      AND status != 'cancelled'
+      AND (
+        check_in_date < $2
+        AND check_out_date > $3
+      );`,
+      [room_id, check_out_date, check_in_date]
+    );
+
+    if (dateConflictCheck.rows.length > 0) throw new BadRequestError('Room is not available for the selected dates');
+
     const { rows } = await db.query(
       `INSERT INTO bookings (guest_id, room_id, check_in_date, check_out_date) 
       VALUES ($1, $2, $3, $4)
