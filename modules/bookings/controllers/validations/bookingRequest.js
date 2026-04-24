@@ -1,4 +1,5 @@
 const yup = require('yup');
+const moment = require('moment');
 
 const validateGetAllGuestBookingsRequest = (form) => {
 	const formShape = {
@@ -35,15 +36,32 @@ const validateCreateBookingRequest = (form) => {
 			.matches(
 				/^\d{4}-\d{2}-\d{2}$/,
 				'check_in_date must be in the format YYYY-MM-DD'
-			),
+			)
+      .test(
+        'valid-date',
+        'check_in_date must be a valid date',
+        value => moment(value, 'YYYY-MM-DD', true).isValid()
+      ),
 		check_out_date: yup.string().required()
 			.matches(
 				/^\d{4}-\d{2}-\d{2}$/,
 				'check_out_date must be in the format YYYY-MM-DD'
 			)
+      .test(
+        'valid-date',
+        'check_out_date must be a valid date',
+        value => moment(value, 'YYYY-MM-DD', true).isValid()
+      ),
 	};
 
-	const schema = yup.object().shape(formShape);
+	const schema = yup.object().shape(formShape).test(
+    'checkout-after-checkin',
+    'check_out_date must be after check_in_date',
+    function({ check_in_date, check_out_date }) {
+      if (!check_in_date || !check_out_date) return true;
+      return moment(check_out_date).isAfter(moment(check_in_date));
+    }
+  );
 	return schema.validate(form, { abortEarly: false, strict: true });
 };
 
