@@ -1,11 +1,17 @@
 const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
+const { sortOptions } = require('../controllers/validations/bookingRequest.js');
+const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
 
-const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'created_at DESC' }) => {
+const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newest', limit = 10, cursor }) => {
   try {
     const guestCheck = await db.query(`SELECT id FROM guests WHERE id = $1;`, [guest_id]);
 
     if (!guestCheck.rows[0]) throw new NotFoundError('Guest not found');
+
+    const sortMeta = sortOptions[sort];
+    const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+    const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
 
     const params = [guest_id];
     let query = `
@@ -20,18 +26,37 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'crea
       query += ` AND status = ANY($${params.length})`;
     };
 
-    query += ` ORDER BY ${sort}`;
+    if (cursor) {
+      const { value, id } = decodeCursor(cursor);
+      params.push(value, id);
+      query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    };
+
+    params.push(limit + 1);
+    query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
 
     const { rows } = await db.query(query, params);
 
-    return rows;
+    const hasNextPage = rows.length > limit;
+    const data = hasNextPage ? rows.slice(0, limit) : rows;
+
+    const lastItem = data[data.length - 1];
+    const nextCursor = hasNextPage && lastItem
+      ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+      : null;
+
+    return { data, nextCursor, hasNextPage };
   } catch (err) {
     throw err;
   }
 };
 
-const processGetAllBookings = async ({ statusValues, sort = 'created_at DESC' }) => {
+const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10, cursor }) => {
   try {
+    const sortMeta = sortOptions[sort];
+    const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+    const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
+
     const params = [];
     let query = `
       SELECT 
@@ -40,16 +65,31 @@ const processGetAllBookings = async ({ statusValues, sort = 'created_at DESC' })
       WHERE 1=1
     `;
 
-    if (statusValues && statusValues.length > 0) {  
+    if (statusValues && statusValues.length > 0) {
       params.push(statusValues);
       query += ` AND status = ANY($${params.length})`;
+    }
+
+    if (cursor) {
+      const { value, id } = decodeCursor(cursor);
+      params.push(value, id);
+      query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
     };
 
-    query += ` ORDER BY ${sort}`;
+    params.push(limit + 1);
+    query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
 
     const { rows } = await db.query(query, params);
 
-    return rows;
+    const hasNextPage = rows.length > limit;
+    const data = hasNextPage ? rows.slice(0, limit) : rows;
+
+    const lastItem = data[data.length - 1];
+    const nextCursor = hasNextPage && lastItem
+      ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+      : null;
+
+    return { data, nextCursor, hasNextPage };
   } catch (err) {
     throw err;
   }

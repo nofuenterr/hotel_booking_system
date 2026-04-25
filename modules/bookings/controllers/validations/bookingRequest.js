@@ -2,12 +2,12 @@ const yup = require('yup');
 const moment = require('moment');
 
 const sortOptions = {
-  check_in_date_asc: 'check_in_date ASC',
-  check_in_date_desc: 'check_in_date DESC',
-  check_out_date_asc: 'check_out_date ASC',
-  check_out_date_desc: 'check_out_date DESC',
-  newest: 'created_at DESC',
-  oldest: 'created_at ASC'
+  newest: { column: 'created_at', direction: 'DESC' },
+  oldest: { column: 'created_at', direction: 'ASC' },
+  check_in_date_asc: { column: 'check_in_date', direction: 'ASC' },
+  check_in_date_desc: { column: 'check_in_date', direction: 'DESC' },
+  check_out_date_asc: { column: 'check_out_date', direction: 'ASC' },
+  check_out_date_desc: { column: 'check_out_date', direction: 'DESC' },
 };
 
 const validateGetAllGuestBookingsRequest = async (form) => {
@@ -25,7 +25,12 @@ const validateGetAllGuestBookingsRequest = async (form) => {
     sort: yup.string()
       .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
       .oneOf(Object.keys(sortOptions), "Invalid sort option")
-      .default('newest')
+      .default('newest'),
+    limit: yup.number()
+      .transform((value) => isNaN(value) ? 10 : value)
+      .min(1, 'limit must be at least 1')
+      .max(50, 'limit cannot exceed 50')
+      .default(10)
 	};
 
 	const schema = yup.object().shape(formShape);
@@ -40,7 +45,12 @@ const validateGetAllBookingsRequest = async (form) => {
     sort: yup.string()
       .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
       .oneOf(Object.keys(sortOptions), "Invalid sort option")
-      .default('newest')
+      .default('newest'),
+    limit: yup.number()
+      .transform((value) => isNaN(value) ? 10 : value)
+      .min(1, 'limit must be at least 1')
+      .max(50, 'limit cannot exceed 50')
+      .default(10)
   };
 
   const schema = yup.object().shape(formShape);

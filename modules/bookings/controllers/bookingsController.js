@@ -7,7 +7,6 @@ const {
   processCancelBooking
 } = require('../functions/bookings.js');
 const {
-  sortOptions,
   validateGetAllGuestBookingsRequest,
   validateGetAllBookingsRequest,
   validateCreateBookingRequest, 
@@ -19,14 +18,21 @@ const {
 const getAllGuestBookings = async (req, res, next) => {
 	try {
 		let { guest_id } = req.params;
-    let { status, sort } = req.query;
+    let { status, sort, limit, cursor } = req.query;
 
 		if (guest_id !== undefined) guest_id = Number(guest_id);
     if (status !== undefined) status = status.split(',').map(s => s.trim()).filter(Boolean);
+    if (limit !== undefined) limit = Number(limit);
 
-    const { status: statusValues, sort: sortOption } = await validateGetAllGuestBookingsRequest({ guest_id, status, sort });
+    const validated = await validateGetAllGuestBookingsRequest({ guest_id, status, sort, limit });
 
-    const result = await processGetAllGuestBookings({ guest_id, statusValues, sort: sortOptions[sortOption] });
+    const result = await processGetAllGuestBookings({ 
+      guest_id,
+      statusValues: validated.status,
+      sort: validated.sort,
+      limit: validated.limit,
+      cursor
+    });
 
 		return res.status(200).json(result);
 	} catch (err) {
@@ -36,13 +42,19 @@ const getAllGuestBookings = async (req, res, next) => {
 
 const getAllBookings = async (req, res, next) => {
 	try {
-    let { status, sort } = req.query;
-
+    let { status, sort, limit, cursor } = req.query;
+    
     if (status !== undefined) status = status.split(',').map(s => s.trim()).filter(Boolean);
+    if (limit !== undefined) limit = Number(limit);
 
-    const { status: statusValues, sort: sortOption } = await validateGetAllBookingsRequest({ status, sort });
+    const validated = await validateGetAllBookingsRequest({ status, sort, limit });
 
-    const result = await processGetAllBookings({ statusValues, sort: sortOptions[sortOption] });
+    const result = await processGetAllBookings({ 
+      statusValues: validated.status,
+      sort: validated.sort,
+      limit: validated.limit,
+      cursor
+    });
 
 		return res.status(200).json(result);
 	} catch (err) {
