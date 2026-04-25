@@ -1,5 +1,29 @@
 const yup = require('yup');
 
+const sortOptions = {
+  first_name_asc: 'first_name ASC',
+  first_name_desc: 'first_name DESC',
+  last_name_asc: 'last_name ASC',
+  last_name_desc: 'last_name DESC',
+  email_asc: 'email ASC',
+  email_desc: 'email DESC',
+  newest: 'created_at DESC',
+  oldest: 'created_at ASC'
+};
+
+const validateGetAllGuestsRequest = async (form) => {
+  const formShape = {
+    search: yup.string().optional(),
+    sort: yup.string()
+      .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
+      .oneOf(Object.keys(sortOptions), "Invalid sort option")
+      .default('newest')
+  };
+
+  const schema = yup.object().shape(formShape);
+  return await schema.validate(form, { abortEarly: false });
+};
+
 const validateCreateGuestRequest = (form) => {
   const formShape = {
     first_name: yup.string().required(),
@@ -47,6 +71,8 @@ const validateUpdateGuestRequest = (form) => {
 };
 
 module.exports = {
+  sortOptions,
+  validateGetAllGuestsRequest,
   validateCreateGuestRequest,
   validateGetGuestRequest,
   validateUpdateGuestRequest

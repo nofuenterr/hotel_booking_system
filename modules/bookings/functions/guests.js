@@ -1,13 +1,25 @@
 const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
 
-const processGetAllGuests = async () => {
+const processGetAllGuests = async ({ search, sort = 'created_at DESC' }) => {
   try {
-    const { rows } = await db.query(
-      `SELECT id, first_name, last_name, email, phone, created_at
-      FROM guests;`
-    );
+    const params = [];
+    let query = `
+      SELECT 
+        id, first_name, last_name, email, phone, created_at
+      FROM guests
+      WHERE 1=1
+    `;
+    
+    if (search) {
+      params.push(`${search.toLowerCase()}%`);
+      query += ` AND (LOWER(first_name) LIKE $${params.length} OR LOWER(last_name) LIKE $${params.length})`;
+    };
 
+    query += ` ORDER BY ${sort}`;
+
+    const { rows } = await db.query(query, params);
+    
     return rows;
   } catch (err) {
     throw err;
