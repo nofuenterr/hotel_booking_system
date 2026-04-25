@@ -1,8 +1,14 @@
 const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
+const { sortOptions } = require('../controllers/validations/roomRequest.js');
+const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
 
-const processGetAllRooms = async ({ check_in_date, check_out_date, typeValues, min_price, max_price, search, sort = 'r.created_at DESC' }) => {
+const processGetAllRooms = async ({ check_in_date, check_out_date, typeValues, min_price, max_price, search, sort = 'newest', limit = 10, cursor }) => {
   try {
+    const sortMeta = sortOptions[sort];
+    const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+    const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
+
     const params = [];
     let query = `
       SELECT 
@@ -24,29 +30,44 @@ const processGetAllRooms = async ({ check_in_date, check_out_date, typeValues, m
 
     if (typeValues && typeValues.length > 0) {
       params.push(typeValues);
-      query += ` AND room_type = ANY($${params.length})`;
+      query += ` AND r.room_type = ANY($${params.length})`;
     };
 
     if (min_price) {
       params.push(min_price);
-      query += ` AND price_per_night >= $${params.length}`;
+      query += ` AND r.price_per_night >= $${params.length}`;
     };
 
     if (max_price) {
       params.push(max_price);
-      query += ` AND price_per_night <= $${params.length}`;
+      query += ` AND r.price_per_night <= $${params.length}`;
     };
 
     if (search) {
       params.push(`${search}%`);
-      query += ` AND room_number LIKE $${params.length}`;
+      query += ` AND r.room_number LIKE $${params.length}`;
     };
 
-    query += ` ORDER BY ${sort}`;
+    if (cursor) {
+      const { value, id } = decodeCursor(cursor);
+      params.push(value, id);
+      query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    };
+
+    params.push(limit + 1);
+    query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
 
     const { rows } = await db.query(query, params);
 
-    return rows;
+    const hasNextPage = rows.length > limit;
+    const data = hasNextPage ? rows.slice(0, limit) : rows;
+
+    const lastItem = data[data.length - 1];
+    const nextCursor = hasNextPage && lastItem
+      ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+      : null;
+    
+    return { data, nextCursor, hasNextPage };
   } catch (err) {
     throw err;
   }
