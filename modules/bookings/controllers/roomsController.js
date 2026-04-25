@@ -6,6 +6,8 @@ const {
   processDeleteRoom
 } = require('../functions/rooms.js');
 const {
+  sortOptions,
+  validateGetAllRoomsRequest,
   validateCreateRoomRequest,
   validateGetRoomRequest,
   validateUpdateRoomRequest,
@@ -14,7 +16,15 @@ const {
 
 const getAllRooms = async (req, res, next) => {
 	try {
-    const result = await processGetAllRooms();
+    let { check_in_date, check_out_date, type, min_price, max_price, search, sort } = req.query;
+
+    if (type !== undefined) type = type.split(',').map(t => t.trim()).filter(Boolean);    
+    if (min_price !== undefined) min_price = Number(min_price);
+    if (max_price !== undefined) max_price = Number(max_price);
+
+    const { type: typeValues, sort: sortOption } = await validateGetAllRoomsRequest({ check_in_date, check_out_date, type, min_price, max_price, search, sort });
+
+    const result = await processGetAllRooms({ check_in_date, check_out_date, typeValues, min_price, max_price, search, sort: sortOptions[sortOption] });
 
 		return res.status(200).json(result);
 	} catch (err) {
