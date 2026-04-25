@@ -20,12 +20,24 @@ const processGetAllGuestBookings = async ({ guest_id }) => {
   }
 };
 
-const processGetAllBookings = async () => {
+const processGetAllBookings = async ({ statusValues, sort = 'created_at DESC' }) => {
   try {
-    const { rows } = await db.query(
-      `SELECT id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
-      FROM bookings;`
-    );
+    const params = [];
+    let query = `
+      SELECT 
+        id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
+      FROM bookings
+      WHERE 1=1
+    `;
+
+    if (statusValues && statusValues.length > 0) {  
+      params.push(statusValues);
+      query += ` AND status = ANY($${params.length})`;
+    };
+
+    query += ` ORDER BY ${sort}`;
+
+    const { rows } = await db.query(query, params);
 
     return rows;
   } catch (err) {

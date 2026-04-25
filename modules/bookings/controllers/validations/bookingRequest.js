@@ -1,6 +1,15 @@
 const yup = require('yup');
 const moment = require('moment');
 
+const sortOptions = {
+  check_in_date_asc: 'check_in_date ASC',
+  check_in_date_desc: 'check_in_date DESC',
+  check_out_date_asc: 'check_out_date ASC',
+  check_out_date_desc: 'check_out_date DESC',
+  newest: 'created_at DESC',
+  oldest: 'created_at ASC'
+};
+
 const validateGetAllGuestBookingsRequest = (form) => {
 	const formShape = {
 		guest_id: yup.number().required()
@@ -14,6 +23,21 @@ const validateGetAllGuestBookingsRequest = (form) => {
 
 	const schema = yup.object().shape(formShape);
 	return schema.validate(form, { abortEarly: false, strict: true });
+};
+
+const validateGetAllBookingsRequest = async (form) => {
+  const formShape = {
+    status: yup.array()
+      .of(yup.string().oneOf(['pending', 'cancelled', 'confirmed'], "Invalid status value: Must be one of: 'pending', 'cancelled', 'confirmed'"))
+      .optional(),
+    sort: yup.string()
+      .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
+      .oneOf(Object.keys(sortOptions), "Invalid sort option")
+      .default('newest')
+  };
+
+  const schema = yup.object().shape(formShape);
+  return await schema.validate(form, { abortEarly: false });
 };
 
 const validateCreateBookingRequest = (form) => {
@@ -89,7 +113,7 @@ const validateUpdateBookingRequest = (form) => {
         'id must be a positive integer',
         value => value > 0
       ),
-		status: yup.string().oneOf(Object.values(['pending', 'cancelled', 'confirmed'])).required()
+		status: yup.string().oneOf(['pending', 'cancelled', 'confirmed']).required()
 	};
 
 	const schema = yup.object().shape(formShape);
@@ -112,7 +136,9 @@ const validateCancelBookingRequest = (form) => {
 };
 
 module.exports = {
+  sortOptions,
   validateGetAllGuestBookingsRequest,
+  validateGetAllBookingsRequest,
   validateCreateBookingRequest, 
   validateGetBookingRequest, 
   validateUpdateBookingRequest, 

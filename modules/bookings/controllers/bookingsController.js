@@ -7,7 +7,9 @@ const {
   processCancelBooking
 } = require('../functions/bookings.js');
 const {
+  sortOptions,
   validateGetAllGuestBookingsRequest,
+  validateGetAllBookingsRequest,
   validateCreateBookingRequest, 
   validateGetBookingRequest, 
   validateUpdateBookingRequest,
@@ -32,7 +34,13 @@ const getAllGuestBookings = async (req, res, next) => {
 
 const getAllBookings = async (req, res, next) => {
 	try {
-    const result = await processGetAllBookings();
+    let { status, sort } = req.query;
+
+    if (status !== undefined) status = status.split(',').map(s => s.trim()).filter(Boolean);
+
+    const { status: statusValues, sort: sortOption } = await validateGetAllBookingsRequest({ status, sort });
+
+    const result = await processGetAllBookings({ statusValues, sort: sortOptions[sortOption] });
 
 		return res.status(200).json(result);
 	} catch (err) {
