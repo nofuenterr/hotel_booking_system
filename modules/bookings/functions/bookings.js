@@ -95,7 +95,7 @@ const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10
   }
 };
 
-const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_out_date }) => {
+const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_out_date, weather }) => {
   try {
     const dateConflictCheck = await db.query(
       `SELECT * FROM bookings
@@ -111,10 +111,10 @@ const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_ou
     if (dateConflictCheck.rows.length > 0) throw new BadRequestError('Room is not available for the selected dates');
 
     const { rows } = await db.query(
-      `INSERT INTO bookings (guest_id, room_id, check_in_date, check_out_date) 
-      VALUES ($1, $2, $3, $4)
-      RETURNING guest_id, room_id, check_in_date, check_out_date;`,
-      [guest_id, room_id, check_in_date, check_out_date]
+      `INSERT INTO bookings (guest_id, room_id, check_in_date, check_out_date, weather) 
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING guest_id, room_id, check_in_date, check_out_date, weather;`,
+      [guest_id, room_id, check_in_date, check_out_date, weather]
     );
 
     if (!rows[0]) throw new BadRequestError('Failed to create booking');

@@ -1,5 +1,7 @@
 const express = require('express');
+const moment = require('moment');
 const routes = require('./routers/bookingsRouter.js');
+const { fetchWeatherForDate } = require('./helpers/services/weatherService.js');
 
 const app = express();
 
@@ -12,6 +14,16 @@ app.use('/', (req, res, next) => {
 });
 
 app.use('/bookings', routes);
+
+app.get('/weather/today', async (req, res, next) => {
+  try {
+    const today = moment().format('YYYY-MM-DD');
+    const data = await fetchWeatherForDate(today);
+    return res.status(200).json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

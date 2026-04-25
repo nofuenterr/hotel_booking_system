@@ -14,6 +14,7 @@ const {
   validateUpdateBookingRequest,
   validateCancelBookingRequest
 } = require('./validations/bookingRequest.js');
+const { fetchWeatherForDate } = require('../../../helpers/services/weatherService.js');
 
 const getAllGuestBookings = async (req, res, next) => {
 	try {
@@ -69,9 +70,11 @@ const createBooking = async (req, res, next) => {
 		if (guest_id !== undefined) guest_id = Number(guest_id);
 		if (room_id !== undefined) room_id = Number(room_id);
 
-		await validateCreateBookingRequest({ guest_id, room_id, check_in_date, check_out_date });
+		await validateCreateBookingRequest({ guest_id, room_id, check_in_date, check_out_date });    
 
-    const result = await processCreateBooking({ guest_id, room_id, check_in_date, check_out_date });
+    const weather = await fetchWeatherForDate(check_in_date);
+
+    const result = await processCreateBooking({ guest_id, room_id, check_in_date, check_out_date, weather });
 
 		return res.status(201).json(result);
 	} catch (err) {
