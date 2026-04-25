@@ -5,7 +5,6 @@ const {
   processUpdateGuest
 } = require('../functions/guests.js');
 const {
-  sortOptions,
   validateGetAllGuestsRequest,
   validateCreateGuestRequest,
   validateGetGuestRequest,
@@ -14,11 +13,18 @@ const {
 
 const getAllGuests = async (req, res, next) => {
 	try {
-    let { search, sort } = req.query;
+    let { search, sort, limit, cursor } = req.query;
 
-    const { sort: sortOption } = await validateGetAllGuestsRequest({ search, sort });
+    if (limit !== undefined) limit = Number(limit);
 
-    const result = await processGetAllGuests({ search, sort: sortOptions[sortOption] });
+    const validated = await validateGetAllGuestsRequest({ search, sort, limit });
+
+    const result = await processGetAllGuests({ 
+      search,
+      sort: validated.sort,
+      limit: validated.limit,
+      cursor
+    });
 
 		return res.status(200).json(result);
 	} catch (err) {

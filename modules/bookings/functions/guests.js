@@ -1,8 +1,14 @@
 const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
+const { sortOptions } = require('../controllers/validations/guestRequest.js');
+const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
 
-const processGetAllGuests = async ({ search, sort = 'created_at DESC' }) => {
+const processGetAllGuests = async ({ search, sort = 'newest', limit = 10, cursor }) => {
   try {
+    const sortMeta = sortOptions[sort];
+    const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+    const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
+    
     const params = [];
     let query = `
       SELECT 
@@ -16,11 +22,26 @@ const processGetAllGuests = async ({ search, sort = 'created_at DESC' }) => {
       query += ` AND (LOWER(first_name) LIKE $${params.length} OR LOWER(last_name) LIKE $${params.length})`;
     };
 
-    query += ` ORDER BY ${sort}`;
+    if (cursor) {
+      const { value, id } = decodeCursor(cursor);
+      params.push(value, id);
+      query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    };
+
+    params.push(limit + 1);
+    query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
 
     const { rows } = await db.query(query, params);
+
+    const hasNextPage = rows.length > limit;
+    const data = hasNextPage ? rows.slice(0, limit) : rows;
+
+    const lastItem = data[data.length - 1];
+    const nextCursor = hasNextPage && lastItem
+      ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+      : null;
     
-    return rows;
+    return { data, nextCursor, hasNextPage };
   } catch (err) {
     throw err;
   }

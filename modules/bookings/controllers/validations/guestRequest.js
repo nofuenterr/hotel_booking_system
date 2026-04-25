@@ -1,14 +1,14 @@
 const yup = require('yup');
 
 const sortOptions = {
-  first_name_asc: 'first_name ASC',
-  first_name_desc: 'first_name DESC',
-  last_name_asc: 'last_name ASC',
-  last_name_desc: 'last_name DESC',
-  email_asc: 'email ASC',
-  email_desc: 'email DESC',
-  newest: 'created_at DESC',
-  oldest: 'created_at ASC'
+  newest: { column: 'created_at', direction: 'DESC' },
+  oldest: { column: 'created_at', direction: 'ASC' },
+  first_name_asc: { column: 'first_name', direction: 'ASC' },
+  first_name_desc: { column: 'first_name', direction: 'DESC' },
+  last_name_asc: { column: 'last_name', direction: 'ASC' },
+  last_name_desc: { column: 'last_name', direction: 'DESC' },
+  email_asc: { column: 'email', direction: 'ASC' },
+  email_desc: { column: 'email', direction: 'DESC' },
 };
 
 const validateGetAllGuestsRequest = async (form) => {
@@ -17,7 +17,12 @@ const validateGetAllGuestsRequest = async (form) => {
     sort: yup.string()
       .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
       .oneOf(Object.keys(sortOptions), "Invalid sort option")
-      .default('newest')
+      .default('newest'),
+    limit: yup.number()
+      .transform((value) => isNaN(value) ? 10 : value)
+      .min(1, 'limit must be at least 1')
+      .max(50, 'limit cannot exceed 50')
+      .default(10)
   };
 
   const schema = yup.object().shape(formShape);
