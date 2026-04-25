@@ -19,12 +19,14 @@ const {
 const getAllGuestBookings = async (req, res, next) => {
 	try {
 		let { guest_id } = req.params;
+    let { status, sort } = req.query;
 
 		if (guest_id !== undefined) guest_id = Number(guest_id);
+    if (status !== undefined) status = status.split(',').map(s => s.trim()).filter(Boolean);
 
-    await validateGetAllGuestBookingsRequest({ guest_id });
+    const { status: statusValues, sort: sortOption } = await validateGetAllGuestBookingsRequest({ guest_id, status, sort });
 
-    const result = await processGetAllGuestBookings({ guest_id });
+    const result = await processGetAllGuestBookings({ guest_id, statusValues, sort: sortOptions[sortOption] });
 
 		return res.status(200).json(result);
 	} catch (err) {

@@ -10,7 +10,7 @@ const sortOptions = {
   oldest: 'created_at ASC'
 };
 
-const validateGetAllGuestBookingsRequest = (form) => {
+const validateGetAllGuestBookingsRequest = async (form) => {
 	const formShape = {
 		guest_id: yup.number().required()
       .integer('guest_id must be a whole number')
@@ -18,11 +18,18 @@ const validateGetAllGuestBookingsRequest = (form) => {
         'positive-integer',
         'guest_id must be a positive integer',
         value => value > 0
-      )
+      ),
+    status: yup.array()
+      .of(yup.string().oneOf(['pending', 'cancelled', 'confirmed'], "Invalid status value: Must be one of: 'pending', 'cancelled', 'confirmed'"))
+      .optional(),
+    sort: yup.string()
+      .transform((value) => ((value === undefined || value.trim() === "") ? undefined : value))
+      .oneOf(Object.keys(sortOptions), "Invalid sort option")
+      .default('newest')
 	};
 
 	const schema = yup.object().shape(formShape);
-	return schema.validate(form, { abortEarly: false, strict: true });
+	return await schema.validate(form, { abortEarly: false });
 };
 
 const validateGetAllBookingsRequest = async (form) => {
