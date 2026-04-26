@@ -52,7 +52,7 @@ const processCreateGuest = async ({ first_name, last_name, email, phone }) => {
     const { rows } = await db.query(
       `INSERT INTO guests (first_name, last_name, email, phone) 
       VALUES ($1, $2, $3, $4)
-      RETURNING first_name, last_name, email, phone;`,
+      RETURNING id, first_name, last_name, email, phone;`,
       [first_name, last_name, email, phone]
     );
 

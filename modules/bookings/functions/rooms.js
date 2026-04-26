@@ -80,8 +80,7 @@ const processCreateRoom = async ({ room_number, room_type, price_per_night }) =>
         (room_number, room_type, price_per_night) 
       VALUES 
         ($1, $2, $3)
-      RETURNING 
-        room_number, room_type, price_per_night;`,
+      RETURNING id, room_number, room_type, price_per_night;`,
       [room_number, room_type, price_per_night]
     );
 

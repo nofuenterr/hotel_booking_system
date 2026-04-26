@@ -113,7 +113,7 @@ const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_ou
     const { rows } = await db.query(
       `INSERT INTO bookings (guest_id, room_id, check_in_date, check_out_date, weather) 
       VALUES ($1, $2, $3, $4, $5)
-      RETURNING guest_id, room_id, check_in_date, check_out_date, weather;`,
+      RETURNING id, guest_id, room_id, check_in_date, check_out_date, weather;`,
       [guest_id, room_id, check_in_date, check_out_date, weather]
     );
 
