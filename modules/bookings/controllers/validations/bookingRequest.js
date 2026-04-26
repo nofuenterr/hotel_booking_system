@@ -100,7 +100,7 @@ const validateCreateBookingRequest = (form) => {
     'check_out_date must be after check_in_date',
     function({ check_in_date, check_out_date }) {
       if (!check_in_date || !check_out_date) return true;
-      return moment(check_out_date).isAfter(moment(check_in_date));
+      return moment(check_out_date, 'YYYY-MM-DD', true).isAfter(moment(check_in_date, 'YYYY-MM-DD', true));
     }
   );
 	return schema.validate(form, { abortEarly: false, strict: true });
