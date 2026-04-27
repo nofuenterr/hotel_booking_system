@@ -2,12 +2,12 @@ const yup = require('yup');
 const moment = require('moment');
 
 const sortOptions = {
-  newest: { column: 'created_at', direction: 'DESC' },
-  oldest: { column: 'created_at', direction: 'ASC' },
-  check_in_date_asc: { column: 'check_in_date', direction: 'ASC' },
-  check_in_date_desc: { column: 'check_in_date', direction: 'DESC' },
-  check_out_date_asc: { column: 'check_out_date', direction: 'ASC' },
-  check_out_date_desc: { column: 'check_out_date', direction: 'DESC' },
+  newest: { column: 'created_at', direction: 'DESC', table: 'b' },
+  oldest: { column: 'created_at', direction: 'ASC', table: 'b' },
+  check_in_date_asc: { column: 'check_in_date', direction: 'ASC', table: 'b' },
+  check_in_date_desc: { column: 'check_in_date', direction: 'DESC', table: 'b' },
+  check_out_date_asc: { column: 'check_out_date', direction: 'ASC', table: 'b' },
+  check_out_date_desc: { column: 'check_out_date', direction: 'DESC', table: 'b' },
 };
 
 const validateGetAllGuestBookingsRequest = async (form) => {
