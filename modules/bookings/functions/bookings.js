@@ -4,6 +4,7 @@ const { sortOptions } = require('../controllers/validations/bookingRequest.js');
 const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
 const { pgErrors, constraints } = require('../../../helpers/functions/pgErrorHandler.js');
 
+// Return room details
 const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newest', limit = 10, cursor }) => {
   const guestCheck = await db.query(`SELECT id FROM guests WHERE id = $1;`, [guest_id]);
 
@@ -16,8 +17,10 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newe
   const params = [guest_id];
   let query = `
     SELECT 
-      id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
-    FROM bookings
+      b.id AS booking_id, b.check_in_date, b.check_out_date, b.status, b.weather, b.created_at,
+      r.id AS room_id, r.room_number, r.room_type, r.price_per_night
+    FROM bookings AS b
+    JOIN rooms AS r ON b.room_id = r.id
     WHERE guest_id = $1
   `;
 
@@ -48,6 +51,7 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newe
   return { data, nextCursor, hasNextPage };
 };
 
+// Return guest info and room details
 const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10, cursor }) => {
   const sortMeta = sortOptions[sort];
   const operator = sortMeta.direction === 'ASC' ? '>' : '<';
@@ -56,8 +60,12 @@ const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10
   const params = [];
   let query = `
     SELECT 
-      id, guest_id, room_id, check_in_date, check_out_date, status, weather, created_at
-    FROM bookings
+      b.id AS booking_id, b.check_in_date, b.check_out_date, b.status, b.weather, b.created_at,
+      g.id AS guest_id, g.first_name, g.last_name, g.email, g.phone,
+      r.id AS room_id, r.room_number, r.room_type, r.price_per_night
+    FROM bookings AS b
+    JOIN guests AS g ON b.guest_id = g.id
+    JOIN rooms AS r ON b.room_id = r.id
     WHERE 1=1
   `;
 
@@ -121,9 +129,9 @@ const processCreateBooking = async ({ guest_id, room_id, check_in_date, check_ou
 const processGetBooking = async ({ id }) => {
   const { rows } = await db.query(
     `SELECT 
-      b.id, b.check_in_date, b.check_out_date, b.status, b.weather, b.created_at,
-      g.id, g.first_name, g.last_name, g.email, g.phone,
-      r.id, r.room_number, r.room_type, r.price_per_night
+      b.id AS booking_id, b.check_in_date, b.check_out_date, b.status, b.weather, b.created_at,
+      g.id AS guest_id, g.first_name, g.last_name, g.email, g.phone,
+      r.id AS room_id, r.room_number, r.room_type, r.price_per_night
     FROM bookings AS b
     JOIN guests AS g ON b.guest_id = g.id
     JOIN rooms AS r ON b.room_id = r.id
