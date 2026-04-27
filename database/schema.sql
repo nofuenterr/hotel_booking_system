@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   status VARCHAR(20) DEFAULT 'pending',
   weather JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT bookings_unique_room_dates UNIQUE (room_id, check_in_date, check_out_date),
   CONSTRAINT bookings_check_out_after_check_in CHECK (check_out_date > check_in_date),
   CONSTRAINT bookings_valid_status CHECK (status IN ('pending','cancelled','confirmed'))
 );
