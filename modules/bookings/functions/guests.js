@@ -2,49 +2,46 @@ const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
 const { sortOptions } = require('../controllers/validations/guestRequest.js');
 const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
+const { pgErrors, constraints } = require('../../../helpers/functions/pgErrorHandler.js');
 
 const processGetAllGuests = async ({ search, sort = 'newest', limit = 10, cursor }) => {
-  try {
-    const sortMeta = sortOptions[sort];
-    const operator = sortMeta.direction === 'ASC' ? '>' : '<';
-    const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
-    
-    const params = [];
-    let query = `
-      SELECT 
-        id, first_name, last_name, email, phone, created_at
-      FROM guests
-      WHERE 1=1
-    `;
-    
-    if (search) {
-      params.push(`${search.toLowerCase()}%`);
-      query += ` AND (LOWER(first_name) LIKE $${params.length} OR LOWER(last_name) LIKE $${params.length})`;
-    };
+  const sortMeta = sortOptions[sort];
+  const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+  const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
+  
+  const params = [];
+  let query = `
+    SELECT 
+      id, first_name, last_name, email, phone, created_at
+    FROM guests
+    WHERE 1=1
+  `;
+  
+  if (search) {
+    params.push(`${search.toLowerCase()}%`);
+    query += ` AND (LOWER(first_name) LIKE $${params.length} OR LOWER(last_name) LIKE $${params.length})`;
+  };
 
-    if (cursor) {
-      const { value, id } = decodeCursor(cursor);
-      params.push(value, id);
-      query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
-    };
+  if (cursor) {
+    const { value, id } = decodeCursor(cursor);
+    params.push(value, id);
+    query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+  };
 
-    params.push(limit + 1);
-    query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
+  params.push(limit + 1);
+  query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
 
-    const { rows } = await db.query(query, params);
+  const { rows } = await db.query(query, params);
 
-    const hasNextPage = rows.length > limit;
-    const data = hasNextPage ? rows.slice(0, limit) : rows;
+  const hasNextPage = rows.length > limit;
+  const data = hasNextPage ? rows.slice(0, limit) : rows;
 
-    const lastItem = data[data.length - 1];
-    const nextCursor = hasNextPage && lastItem
-      ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
-      : null;
-    
-    return { data, nextCursor, hasNextPage };
-  } catch (err) {
-    throw err;
-  }
+  const lastItem = data[data.length - 1];
+  const nextCursor = hasNextPage && lastItem
+    ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+    : null;
+  
+  return { data, nextCursor, hasNextPage };
 };
 
 const processCreateGuest = async ({ first_name, last_name, email, phone }) => {
@@ -60,37 +57,22 @@ const processCreateGuest = async ({ first_name, last_name, email, phone }) => {
 
     return rows[0];
   } catch (err) {
-    if (err.code === '23505') {
-      if (err.constraint === 'guests_email_key') throw new BadRequestError('Email already exists');
-      throw new BadRequestError('Duplicate entry');
-    }
-    if (err.code === '23514') {
-      if (err.constraint === 'guests_first_name_not_blank') throw new BadRequestError('First name cannot be blank');
-      if (err.constraint === 'guests_last_name_not_blank') throw new BadRequestError('Last name cannot be blank');
-      if (err.constraint === 'guests_email_not_blank') throw new BadRequestError('Email cannot be blank');
-      if (err.constraint === 'guests_phone_not_blank') throw new BadRequestError('Phone cannot be blank');
-      throw new BadRequestError('Check constraint violation');
-    }
-    throw err;
+    pgErrors(err, constraints.createGuest);
   }
 };
 
 const processGetGuest = async ({ id }) => {
-  try {
-    const { rows } = await db.query(
-      `SELECT id, first_name, last_name, email, phone, created_at
-      FROM guests
-      WHERE id = $1
-      LIMIT 1;`,
-      [id]
-    );
+  const { rows } = await db.query(
+    `SELECT id, first_name, last_name, email, phone, created_at
+    FROM guests
+    WHERE id = $1
+    LIMIT 1;`,
+    [id]
+  );
 
-    if (!rows[0]) throw new NotFoundError('Guest not found');
+  if (!rows[0]) throw new NotFoundError('Guest not found');
 
-    return rows[0];
-  } catch (err) {
-    throw err;
-  }
+  return rows[0];
 };
 
 const processUpdateGuest = async ({ id, first_name, last_name, email, phone }) => {
@@ -106,18 +88,7 @@ const processUpdateGuest = async ({ id, first_name, last_name, email, phone }) =
 
     return rows[0];
   } catch (err) {
-    if (err.code === '23505') {
-      if (err.constraint === 'guests_email_key') throw new BadRequestError('Email already exists');
-      throw new BadRequestError('Duplicate entry');
-    }
-    if (err.code === '23514') {
-      if (err.constraint === 'guests_first_name_not_blank') throw new BadRequestError('First name cannot be blank');
-      if (err.constraint === 'guests_last_name_not_blank') throw new BadRequestError('Last name cannot be blank');
-      if (err.constraint === 'guests_email_not_blank') throw new BadRequestError('Email cannot be blank');
-      if (err.constraint === 'guests_phone_not_blank') throw new BadRequestError('Phone cannot be blank');
-      throw new BadRequestError('Check constraint violation');
-    }
-    throw err;
+    pgErrors(err, constraints.updateGuest);
   }
 };
 
