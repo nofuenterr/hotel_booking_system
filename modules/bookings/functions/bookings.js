@@ -4,7 +4,6 @@ const { sortOptions } = require('../controllers/validations/bookingRequest.js');
 const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
 const { pgErrors, constraints } = require('../../../helpers/functions/pgErrorHandler.js');
 
-// Return room details
 const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newest', limit = 10, cursor }) => {
   const guestCheck = await db.query(`SELECT id FROM guests WHERE id = $1;`, [guest_id]);
 
@@ -26,17 +25,17 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newe
 
   if (statusValues && statusValues.length > 0) {  
     params.push(statusValues);
-    query += ` AND status = ANY($${params.length})`;
+    query += ` AND b.status = ANY($${params.length})`;
   };
 
   if (cursor) {
     const { value, id } = decodeCursor(cursor);
     params.push(value, id);
-    query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    query += ` AND (${col}, b.id) ${operator} ($${params.length - 1}, $${params.length})`;
   };
 
   params.push(limit + 1);
-  query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
+  query += ` ORDER BY ${col} ${sortMeta.direction}, b.id ${sortMeta.direction} LIMIT $${params.length}`;
 
   const { rows } = await db.query(query, params);
 
@@ -51,7 +50,6 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newe
   return { data, nextCursor, hasNextPage };
 };
 
-// Return guest info and room details
 const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10, cursor }) => {
   const sortMeta = sortOptions[sort];
   const operator = sortMeta.direction === 'ASC' ? '>' : '<';
@@ -71,17 +69,17 @@ const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10
 
   if (statusValues && statusValues.length > 0) {
     params.push(statusValues);
-    query += ` AND status = ANY($${params.length})`;
+    query += ` AND b.status = ANY($${params.length})`;
   }
 
   if (cursor) {
     const { value, id } = decodeCursor(cursor);
     params.push(value, id);
-    query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    query += ` AND (${col}, b.id) ${operator} ($${params.length - 1}, $${params.length})`;
   };
 
   params.push(limit + 1);
-  query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
+  query += ` ORDER BY ${col} ${sortMeta.direction}, b.id ${sortMeta.direction} LIMIT $${params.length}`;
 
   const { rows } = await db.query(query, params);
 
