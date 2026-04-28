@@ -11,8 +11,7 @@ const processGetAllGuests = async ({ search, sort = 'newest', limit = 10, cursor
   
   const params = [];
   let query = `
-    SELECT 
-      id, first_name, last_name, email, phone, created_at
+    SELECT id, first_name, last_name, email, phone, created_at
     FROM guests
     WHERE 1=1
   `;
@@ -80,7 +79,8 @@ const processUpdateGuest = async ({ id, first_name, last_name, email, phone }) =
     const { rows } = await db.query(
       `UPDATE guests
       SET first_name = $2, last_name = $3, email = $4, phone = $5
-      WHERE id = $1;`,
+      WHERE id = $1
+      RETURNING id, first_name, last_name, email, phone;`,
       [id, first_name, last_name, email, phone]
     );
 

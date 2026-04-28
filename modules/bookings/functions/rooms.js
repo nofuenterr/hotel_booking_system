@@ -73,10 +73,8 @@ const processGetAllRooms = async ({ check_in_date, check_out_date, typeValues, m
 const processCreateRoom = async ({ room_number, room_type, price_per_night }) => {
   try {
     const { rows } = await db.query(
-      `INSERT INTO rooms 
-        (room_number, room_type, price_per_night) 
-      VALUES 
-        ($1, $2, $3)
+      `INSERT INTO rooms (room_number, room_type, price_per_night) 
+      VALUES ($1, $2, $3)
       RETURNING id, room_number, room_type, price_per_night;`,
       [room_number, room_type, price_per_night]
     );
@@ -91,8 +89,7 @@ const processCreateRoom = async ({ room_number, room_type, price_per_night }) =>
 
 const processGetRoom = async ({ id }) => {
   const { rows } = await db.query(
-    `SELECT 
-      id, room_number, room_type, price_per_night, created_at
+    `SELECT id, room_number, room_type, price_per_night, created_at
     FROM rooms
     WHERE id = $1
     LIMIT 1;`,
@@ -110,8 +107,7 @@ const processUpdateRoom = async ({ id, room_number, room_type, price_per_night }
       `UPDATE rooms
       SET room_number = $2, room_type = $3, price_per_night = $4
       WHERE id = $1
-      RETURNING 
-        id, room_number, room_type, price_per_night;`,
+      RETURNING id, room_number, room_type, price_per_night;`,
       [id, room_number, room_type, price_per_night]
     );
 
@@ -126,7 +122,8 @@ const processUpdateRoom = async ({ id, room_number, room_type, price_per_night }
 const processDeleteRoom = async ({ id }) => {
   const { rows } = await db.query(
     `DELETE FROM rooms 
-    WHERE id = $1;`,
+    WHERE id = $1
+    RETURNING id, room_number, room_type, price_per_night;`,
     [id]
   );
 
