@@ -80,6 +80,7 @@ const updateRoom = async (req, res, next) => {
     let { id } = req.params;
 
     if (price_per_night !== undefined) price_per_night = Number(price_per_night);
+    if (id !== undefined) id = Number(id);
 
 		await validateUpdateRoomRequest({ id, room_number, room_type, price_per_night });
 
