@@ -35,3 +35,15 @@ CREATE TABLE IF NOT EXISTS bookings (
   CONSTRAINT bookings_check_out_after_check_in CHECK (check_out_date > check_in_date),
   CONSTRAINT bookings_valid_status CHECK (status IN ('pending','cancelled','confirmed'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_bookings_guest_id ON bookings(guest_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_room_id ON bookings(room_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_check_in_date ON bookings(check_in_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_check_out_date ON bookings(check_out_date);
+
+CREATE INDEX IF NOT EXISTS idx_guests_lower_first_name ON guests(LOWER(first_name));
+CREATE INDEX IF NOT EXISTS idx_guests_lower_last_name ON guests(LOWER(last_name));
+
+CREATE INDEX IF NOT EXISTS idx_rooms_room_type ON rooms(room_type);
+CREATE INDEX IF NOT EXISTS idx_rooms_price_per_night ON rooms(price_per_night);
