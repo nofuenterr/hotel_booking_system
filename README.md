@@ -17,7 +17,7 @@ Hotel Booking System is a backend-focused REST API built with Node.js and Expres
 - Request validation with Yup (type, format, cross-field)
 - Centralized error handling with custom error classes
 - Cursor-based pagination with dynamic sorting and filtering
-- Room availability checking with database-level locking
+- Room availability checking
 - Weather forecast fetched and stored on booking creation
 - Unit tests with Jest
 - Minimal static front-end served via Express
@@ -107,8 +107,6 @@ DB_USER=postgres
 DB_PASSWORD=       # your PostgreSQL password
 DB_NAME=hotel_booking_db
 DB_PORT=5432
-
-WEATHER_API_BASE_URL=
 ```
 
 ### Database Setup
