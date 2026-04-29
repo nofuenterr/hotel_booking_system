@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="RR Nofuente">
+  <title>Hotel Booking System</title>
+  <link rel="stylesheet" href="./css/modernNormalize.css">
+  <link rel="stylesheet" href="./css/reset.css">
+  <link rel="stylesheet" href="./css/globals.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <span class="site-title">Hotel Booking System</span>
+    <div class="header-right">
+      <div class="weather-widget" id="weatherWidget">
+        <span id="weatherIcon">🌤</span>
+        <span class="weather-temp" id="weatherTemp">--°C</span>
+        <span id="weatherDesc">Loading...</span>
+      </div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="guest">Guest</button>
+        <button class="mode-btn" data-mode="admin">Admin</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- APP LAYOUT -->
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content" id="mainContent"></main>
+  </div>
+
+  <!-- Create/Edit Guest Modal -->
+  <div class="modal-backdrop" id="guestModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="guestModalTitle">Create Guest</h2>
+        <button class="modal-close" data-close="guestModal" aria-label="Close">✕</button>
+      </div>
+      <form id="guestForm" novalidate>
+        <input type="hidden" id="guestFormId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="guestFirstName">First Name *</label>
+            <input class="input" id="guestFirstName" placeholder="John" required style="width:100%">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="guestLastName">Last Name *</label>
+            <input class="input" id="guestLastName" placeholder="Doe" required style="width:100%">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="guestEmail">Email *</label>
+          <input class="input" id="guestEmail" type="email" placeholder="john@email.com" required style="width:100%">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="guestPhone">Phone</label>
+          <input class="input" id="guestPhone" placeholder="+1-555-0101" style="width:100%">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="guestModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="guestFormSubmitBtn">Create Guest</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create/Edit Room Modal -->
+  <div class="modal-backdrop" id="roomModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="roomModalTitle">Create Room</h2>
+        <button class="modal-close" data-close="roomModal" aria-label="Close">✕</button>
+      </div>
+      <form id="roomForm" novalidate>
+        <input type="hidden" id="roomFormId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="roomNumber">Room Number *</label>
+            <input class="input" id="roomNumber" placeholder="101" required style="width:100%">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="roomType">Room Type *</label>
+            <select class="select" id="roomType" required style="width:100%">
+              <option value="">Select type</option>
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+              <option value="suite">Suite</option>
+              <option value="deluxe">Deluxe</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="roomPrice">Price Per Night *</label>
+          <input class="input" id="roomPrice" type="number" step="any" min="0.01" placeholder="150.00" required style="width:100%">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="roomModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="roomFormSubmitBtn">Create Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Booking Modal -->
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Booking</h2>
+        <button class="modal-close" data-close="bookingModal" aria-label="Close">✕</button>
+      </div>
+      <form id="bookingForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="bookingGuestId">Guest *</label>
+          <select class="select" id="bookingGuestId" required style="width:100%">
+            <option value="">Select guest</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bookingRoomId">Room *</label>
+          <select class="select" id="bookingRoomId" required style="width:100%">
+            <option value="">Select room</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="bookingCheckIn">Check-In Date *</label>
+            <input class="input" id="bookingCheckIn" type="date" required style="width:100%">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="bookingCheckOut">Check-Out Date *</label>
+            <input class="input" id="bookingCheckOut" type="date" required style="width:100%">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="bookingModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h2 class="modal-title" id="detailModalTitle">Details</h2>
+        <button class="modal-close" data-close="detailModal" aria-label="Close">✕</button>
+      </div>
+      <div id="detailModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Update Booking Status Modal -->
+  <div class="modal-backdrop" id="updateBookingModal">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-header">
+        <h2 class="modal-title">Update Booking Status</h2>
+        <button class="modal-close" data-close="updateBookingModal" aria-label="Close">✕</button>
+      </div>
+      <form id="updateBookingForm" novalidate>
+        <input type="hidden" id="updateBookingId">
+        <div class="form-group">
+          <label class="form-label" for="updateBookingStatus">Status</label>
+          <select class="select" id="updateBookingStatus" style="width:100%">
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="updateBookingModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Availability Filter Modal -->
+  <div class="modal-backdrop" id="availabilityModal">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-header">
+        <h2 class="modal-title">Check Availability</h2>
+        <button class="modal-close" data-close="availabilityModal" aria-label="Close">✕</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1.25rem">
+        Filter rooms that are available between the two dates you select.
+      </p>
+      <form id="availabilityForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="roomsCheckIn">Check-In *</label>
+            <input class="input" id="roomsCheckIn" type="date" required style="width:100%">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="roomsCheckOut">Check-Out *</label>
+            <input class="input" id="roomsCheckOut" type="date" required style="width:100%">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="availabilityClearBtn">Clear</button>
+          <button type="button" class="btn btn-ghost" data-close="availabilityModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
