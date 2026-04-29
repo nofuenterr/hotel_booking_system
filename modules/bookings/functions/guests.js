@@ -7,6 +7,8 @@ const { pgErrors, constraints } = require('../../../helpers/functions/pgErrorHan
 const processGetAllGuests = async ({ search, sort = 'newest', limit = 10, cursor }) => {
   const sortMeta = sortOptions[sort];
   const operator = sortMeta.direction === 'ASC' ? '>' : '<';
+  const rawColumn = sortMeta.column;
+  if (rawColumn === 'first_name' || rawColumn === 'last_name') sortMeta.column = `LOWER(${rawColumn})`; 
   const col = sortMeta.table ? `${sortMeta.table}.${sortMeta.column}` : sortMeta.column;
   
   const params = [];
@@ -37,7 +39,7 @@ const processGetAllGuests = async ({ search, sort = 'newest', limit = 10, cursor
 
   const lastItem = data[data.length - 1];
   const nextCursor = hasNextPage && lastItem
-    ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+    ? encodeCursor(lastItem[rawColumn], lastItem.id, sortMeta.direction)
     : null;
   
   return { data, nextCursor, hasNextPage };
