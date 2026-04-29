@@ -79,7 +79,7 @@ hotel_booking/
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/nofuenterr/hotel_booking_system
 
 # Navigate into the project directory
 cd hotel_booking
