@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 const {
   NODE_ENV,
   DATABASE_URL,
@@ -8,6 +8,9 @@ const {
   DB_NAME,
   DB_PORT
 } = require('../config/mainConfig.js');
+
+types.setTypeParser(1114, val => val);
+types.setTypeParser(1184, val => val);
 
 const connectionConfig = NODE_ENV === 'production'
   ? {
