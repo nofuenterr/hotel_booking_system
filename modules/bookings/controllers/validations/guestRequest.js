@@ -7,8 +7,6 @@ const sortOptions = {
   first_name_desc: { column: 'first_name', direction: 'DESC' },
   last_name_asc: { column: 'last_name', direction: 'ASC' },
   last_name_desc: { column: 'last_name', direction: 'DESC' },
-  email_asc: { column: 'email', direction: 'ASC' },
-  email_desc: { column: 'email', direction: 'DESC' },
 };
 
 const validateGetAllGuestsRequest = async (form) => {
