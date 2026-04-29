@@ -111,11 +111,16 @@ DB_PORT=5432
 
 ### Database Setup
 
-Create the database manually in psql:
+Create the database using any of the following:
 
+**psql:**
 ```sql
 CREATE DATABASE hotel_booking_db;
 ```
+
+**pgAdmin:** Right-click Databases → Create → Database → name it `hotel_booking_db`
+
+**TablePlus / DBeaver:** Connect to your PostgreSQL server → right-click → New Database
 
 Then run migrations and (optionally) seed data:
 
