@@ -51,11 +51,11 @@ const processGetAllRooms = async ({ check_in_date, check_out_date, typeValues, m
   if (cursor) {
     const { value, id } = decodeCursor(cursor);
     params.push(value, id);
-    query += ` AND (${col}, id) ${operator} ($${params.length - 1}, $${params.length})`;
+    query += ` AND (${col}, r.id) ${operator} ($${params.length - 1}, $${params.length})`;
   };
 
   params.push(limit + 1);
-  query += ` ORDER BY ${col} ${sortMeta.direction}, id ${sortMeta.direction} LIMIT $${params.length}`;
+  query += ` ORDER BY ${col} ${sortMeta.direction}, r.id ${sortMeta.direction} LIMIT $${params.length}`;
 
   const { rows } = await db.query(query, params);
 
