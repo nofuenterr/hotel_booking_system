@@ -1,7 +1,7 @@
 const db = require('../../../includes/db/db.js');
 const { NotFoundError, BadRequestError } = require('../../../helpers/errors/customErrors.js');
 const { sortOptions } = require('../controllers/validations/bookingRequest.js');
-const { decodeCursor, encodeCursor } = require('../../../helpers/functions/customFunctions.js');
+const { decodeCursor, encodeCursor, getRawCursorValue } = require('../../../helpers/functions/customFunctions.js');
 const { pgErrors, constraints } = require('../../../helpers/functions/pgErrorHandler.js');
 
 const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newest', limit = 10, cursor }) => {
@@ -44,7 +44,7 @@ const processGetAllGuestBookings = async ({ guest_id, statusValues, sort = 'newe
 
   const lastItem = data[data.length - 1];
   const nextCursor = hasNextPage && lastItem
-    ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+    ? encodeCursor(getRawCursorValue(lastItem, sortMeta.column), lastItem.booking_id, sortMeta.direction)
     : null;
 
   return { data, nextCursor, hasNextPage };
@@ -88,7 +88,7 @@ const processGetAllBookings = async ({ statusValues, sort = 'newest', limit = 10
 
   const lastItem = data[data.length - 1];
   const nextCursor = hasNextPage && lastItem
-    ? encodeCursor(lastItem[sortMeta.column], lastItem.id, sortMeta.direction)
+    ? encodeCursor(getRawCursorValue(lastItem, sortMeta.column), lastItem.booking_id, sortMeta.direction)
     : null;
 
   return { data, nextCursor, hasNextPage };
